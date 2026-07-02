@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecipeCraft AI - Smart Pantry & Dietary Optimizer</title>
+    <meta name="description" content="Reduce food waste and optimize healthy eating using Gemini multi-modal AI to scan your fridge and generate tailored recipes.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+
+    <header class="app-header">
+        <div class="header-logo">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C7.58 2 4 5.58 4 10C4 13.39 6.11 16.29 9.07 17.4C9.03 17.6 9 17.8 9 18C9 19.66 10.34 21 12 21C13.66 21 15 19.66 15 18C15 17.8 14.97 17.6 14.93 17.4C17.89 16.29 20 13.39 20 10C20 5.58 16.42 2 12 2ZM12 19C11.45 19 11 18.55 11 18C11 17.45 11.45 17 12 17C12.55 17 13 17.45 13 18C13 18.55 12.55 19 12 19ZM16 11H8V9H16V11Z" fill="currentColor"/>
+            </svg>
+            <div class="logo-text">
+                <h1>RecipeCraft <span class="accent-text">AI</span></h1>
+                <p class="tagline">Smart Pantry &amp; Dietary Optimizer</p>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div id="demo-banner" class="demo-badge">
+                <span class="pulse-dot"></span> Demo Mode Enabled
+            </div>
+            <button id="settings-btn" class="icon-btn" aria-label="Open Settings">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-settings">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="app-container">
+        <!-- SIDEBAR PANEL: Pantry, Photo Scanning, Restrictions -->
+        <section class="sidebar-panel" aria-labelledby="pantry-title">
+            <h2 id="pantry-title" class="section-title">My Pantry</h2>
+
+            <!-- Pantry Item Input -->
+            <div class="pantry-adder">
+                <input type="text" id="pantry-input" placeholder="Add egg, spinach, chicken..." autocomplete="off">
+                <button id="add-pantry-btn" class="primary-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Add
+                </button>
+            </div>
+
+            <!-- Pantry Items Container -->
+            <div class="pantry-manager">
+                <div class="pantry-header-sub">
+                    <span id="pantry-count">0 items in pantry</span>
+                    <button id="clear-pantry-btn" class="text-link-btn">Clear All</button>
+                </div>
+                <div id="pantry-list" class="pantry-list scrollable">
+                    <!-- Items inserted by JS -->
+                    <div class="pantry-empty-state">Pantry is empty. Type items or scan a photo!</div>
+                </div>
+            </div>
+
+            <!-- Multi-Modal Image Uploader -->
+            <div class="photo-scanner-section">
+                <h3>Multi-Modal Fridge Scan</h3>
+                <div id="upload-zone" class="upload-zone">
+                    <input type="file" id="photo-upload-input" accept="image/*" style="display:none">
+                    
+                    <div id="upload-placeholder" class="upload-placeholder">
+                        <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                            <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                        <p class="upload-text">Drag &amp; drop fridge image or <span>Browse</span></p>
+                    </div>
+
+                    <div id="upload-preview-container" class="upload-preview-container" style="display:none">
+                        <img id="upload-preview" src="" alt="Fridge Scan Preview">
+                        <div class="scanner-laser"></div>
+                        <button id="remove-photo-btn" class="remove-photo-btn" aria-label="Remove Photo">&times;</button>
+                    </div>
+                </div>
+                <div class="photo-actions">
+                    <button id="sample-photo-btn" class="secondary-btn">Use Sample Photo</button>
+                    <button id="scan-photo-btn" class="accent-btn" style="display:none">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        Scan Photo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dietary Restrictions -->
+            <div class="diet-section">
+                <h3>Dietary Restrictions</h3>
+                <div class="diet-chips">
+                    <button class="diet-chip" data-diet="high-protein">High-Protein</button>
+                    <button class="diet-chip" data-diet="gluten-free">Gluten-Free</button>
+                    <button class="diet-chip" data-diet="keto">Keto</button>
+                    <button class="diet-chip" data-diet="vegetarian">Vegetarian</button>
+                    <button class="diet-chip" data-diet="vegan">Vegan</button>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button id="generate-recipes-btn" class="generate-btn">
+                <span>Formulate 3 Custom Recipes</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="btn-icon arrow-icon"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+        </section>
+
+        <!-- MAIN PANEL: Recipes Grid -->
+        <section class="main-panel" aria-labelledby="discover-title">
+            <h2 id="discover-title" class="sr-only">Recipe Discoveries</h2>
+
+            <!-- Welcome / Empty State -->
+            <div id="recipe-empty-state" class="welcome-container">
+                <div class="welcome-card">
+                    <div class="welcome-icon">🍲</div>
+                    <h2>Welcome to RecipeCraft AI</h2>
+                    <p>Enter your pantry items manually or upload a picture of your fridge/pantry ingredients. We will use the power of Gemini to formulate recipes tailored to your dietary goals.</p>
+                    <div class="steps-hints">
+                        <div class="hint-step">
+                            <span class="hint-num">1</span>
+                            <p><strong>Add ingredients</strong> or upload a photo</p>
+                        </div>
+                        <div class="hint-step">
+                            <span class="hint-num">2</span>
+                            <p><strong>Select dietary options</strong> like High-Protein</p>
+                        </div>
+                        <div class="hint-step">
+                            <span class="hint-num">3</span>
+                            <p><strong>Cook with interactive guidance</strong> that adapts live</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="recipes-loading" class="recipes-loading" style="display:none">
+                <div class="loading-spinner-container">
+                    <div class="loading-spinner"></div>
+                    <h3>Consulting Gemini AI Chef...</h3>
+                    <p>Creating customized recipes tailored to your pantry &amp; diet</p>
+                </div>
+                <div class="shimmer-grid">
+                    <div class="shimmer-card"></div>
+                    <div class="shimmer-card"></div>
+                    <div class="shimmer-card"></div>
+                </div>
+            </div>
+
+            <!-- Recipe Results Container -->
+            <div id="recipe-results" class="recipe-results" style="display:none">
+                <div class="results-header">
+                    <h2>AI Recipe Formulations</h2>
+                    <span id="results-meta">Based on your active pantry</span>
+                </div>
+                <div id="recipes-grid" class="recipes-grid">
+                    <!-- Cards will be populated by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- DETAILED RECIPE VIEW MODAL -->
+    <div id="recipe-detail-modal" class="modal-overlay" style="display:none">
+        <div class="modal-card recipe-details-card glass">
+            <button class="modal-close-btn" id="close-detail-modal-btn">&times;</button>
+            <div class="recipe-detail-header-img" id="detail-header-gradient">
+                <div class="detail-header-content">
+                    <span id="detail-difficulty" class="difficulty-badge">Medium</span>
+                    <h2 id="detail-title">Garlic Spinach Sauté</h2>
+                    <p id="detail-desc">A tasty spinach dish...</p>
+                </div>
+            </div>
+            
+            <div class="recipe-detail-body">
+                <div class="detail-meta-row">
+                    <div class="meta-item">
+                        <span class="meta-label">⏰ Prep Time</span>
+                        <strong id="detail-time">20 mins</strong>
+                    </div>
+                    <div class="meta-item calories-item">
+                        <span class="meta-label">🔥 Calories</span>
+                        <strong id="detail-calories">450 kcal</strong>
+                    </div>
+                    <div class="meta-item macro-item">
+                        <div class="macro-circle-container">
+                            <!-- Conic gradient set in JS -->
+                            <div class="macro-mini-chart" id="detail-macro-chart"></div>
+                            <div class="macro-mini-legend">
+                                <div><span class="dot protein-dot"></span> P: <strong id="detail-p">30g</strong></div>
+                                <div><span class="dot carb-dot"></span> C: <strong id="detail-c">40g</strong></div>
+                                <div><span class="dot fat-dot"></span> F: <strong id="detail-f">15g</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-columns">
+                    <!-- Ingredients list -->
+                    <div class="detail-ingredients-col">
+                        <h3>Ingredients Needed</h3>
+                        <p class="ingredient-info-sub">Highlighting items you have in your pantry</p>
+                        <ul id="detail-ingredients-list" class="ingredients-list-detail">
+                            <!-- Populated by JS -->
+                        </ul>
+                    </div>
+
+                    <!-- Steps preview list -->
+                    <div class="detail-steps-col">
+                        <h3>Cooking Steps Overview</h3>
+                        <ol id="detail-steps-list" class="steps-preview-list">
+                            <!-- Populated by JS -->
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="cancel-detail-btn" class="secondary-btn">Close</button>
+                <button id="start-cooking-btn" class="primary-btn pulse-glow">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    Start Step-by-Step Cooking
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP-BY-STEP AI CHEF COMPANION MODAL -->
+    <div id="chef-companion-modal" class="modal-overlay" style="display:none">
+        <div class="modal-card chef-card glass">
+            <button class="modal-close-btn" id="close-chef-modal-btn">&times;</button>
+            
+            <div class="chef-header">
+                <div class="chef-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="chef-svg">
+                        <circle cx="12" cy="12" r="10" fill="currentColor" fill-opacity="0.1" stroke="currentColor" stroke-width="2"/>
+                        <path d="M8 15C8.5 16.5 10 17.5 12 17.5C14 17.5 15.5 16.5 16 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M9 10C9.5 10 10 9.5 10 9C10 8.5 9.5 8 9 8C8.5 8 8 8.5 8 9C8 9.5 8.5 10 9 10ZM15 10C15.5 10 16 9.5 16 9C16 8.5 15.5 8 15 8C14.5 8 14 8.5 14 9C14 9.5 14.5 10 15 10Z" fill="currentColor"/>
+                        <path d="M6 12C6 9 8 7 12 7C16 7 18 9 18 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="chef-header-title">
+                    <span class="chef-badge">AI Chef Companion</span>
+                    <h2 id="chef-recipe-title">Mediterranean Chicken Scramble</h2>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="chef-progress-container">
+                <div class="progress-labels">
+                    <span id="chef-step-indicator">Step 1 of 5</span>
+                    <span id="chef-percentage">20% Complete</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div id="chef-progress-bar" class="progress-bar-fill" style="width: 20%"></div>
+                </div>
+            </div>
+
+            <!-- Active Step Presentation -->
+            <div class="active-step-container">
+                <div class="step-card">
+                    <div class="step-num-bubble" id="chef-step-num">1</div>
+                    <div class="step-content-box">
+                        <p id="chef-step-text">Dice the chicken breast and bell peppers into bite-sized pieces. Halve the cherry tomatoes.</p>
+                    </div>
+                </div>
+
+                <!-- Text to speech voice bar -->
+                <div class="speech-control">
+                    <button id="speech-btn" class="speech-toggle-btn" aria-label="Toggle Voice Aloud">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="voice-icon"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                        <span>Listen to Instructions</span>
+                    </button>
+                    <div id="speaking-visualizer" class="speaking-visualizer" style="display:none">
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                        <span class="bar"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Substitution UI Section -->
+            <div class="substitution-section">
+                <!-- Trigger Panel -->
+                <div id="out-of-ingredient-panel" class="out-of-ingredient-panel">
+                    <button id="trigger-sub-btn" class="sub-trigger-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-icon alert-icon"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        Ran out of a secondary ingredient halfway?
+                    </button>
+                    <div id="sub-selection-form" class="sub-selection-form" style="display:none">
+                        <label for="missing-ingredient-select">Select ingredient you just ran out of:</label>
+                        <div class="form-row">
+                            <select id="missing-ingredient-select">
+                                <!-- Populated dynamically based on ingredients -->
+                            </select>
+                            <button id="submit-adapt-btn" class="accent-btn small-btn">Adapt Recipe</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adaptation response output -->
+                <div id="adaptation-result-box" class="adaptation-result-box" style="display:none">
+                    <div class="adapt-alert-header">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="adapt-icon"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        <h4>AI Adaptation Applied</h4>
+                        <button id="dismiss-adaptation-btn" class="close-alert-btn">&times;</button>
+                    </div>
+                    <p id="adaptation-msg"></p>
+                    <div class="adapted-steps-list-box">
+                        <h5>Adapted Steps Remaining:</h5>
+                        <ul id="adapted-steps-list">
+                            <!-- Populated dynamically -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer flex-between">
+                <button id="chef-prev-btn" class="secondary-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    Previous Step
+                </button>
+                <div class="footer-center-actions">
+                    <button id="pause-cooking-btn" class="secondary-btn">Pause</button>
+                </div>
+                <button id="chef-next-btn" class="primary-btn">
+                    <span>Next Step</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="btn-icon"><polyline points="9 6 15 12 9 18"></polyline></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay" style="display:none">
+        <div class="modal-card settings-card glass">
+            <button class="modal-close-btn" id="close-settings-modal-btn">&times;</button>
+            <h2>RecipeCraft Config Settings</h2>
+            
+            <div class="settings-body">
+                <div class="setting-group">
+                    <label for="api-key-input">Gemini API Key</label>
+                    <input type="password" id="api-key-input" placeholder="AIzaSy...">
+                    <p class="setting-desc">Paste your Gemini API key here. It is saved securely in your browser's local storage and is never saved on a public server. Precedes environment variables.</p>
+                </div>
+
+                <div class="setting-group toggle-group">
+                    <div class="toggle-label-desc">
+                        <label for="demo-mode-toggle">Force Demo Mode</label>
+                        <p class="setting-desc">Use pre-generated, premium culinary recipes and instant image recognitions without querying the live Gemini API.</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="demo-mode-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="key-status-row">
+                    <span>API Connection Status:</span>
+                    <strong id="api-status-text" class="status-demo">Demo Mode</strong>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button id="save-settings-btn" class="primary-btn">Save Configurations</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JS Application script -->
+    <script src="app.js"></script>
+</body>
+</html>
