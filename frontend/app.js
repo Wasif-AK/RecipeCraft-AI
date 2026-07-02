@@ -77,6 +77,11 @@ let uploadedImageBase64 = null;
 
 // Initialize app
 function init() {
+    setupAuthListeners();
+    checkAuthState();
+}
+
+function startApp() {
     loadSettings();
     loadPantry();
     setupEventListeners();
@@ -912,6 +917,100 @@ fadeOutStyle.innerText = `
   }
 `;
 document.head.appendChild(fadeOutStyle);
+// ===== AUTH LOGIC (Mocked) =====
+
+function getUsers() {
+    const raw = localStorage.getItem('recipe_craft_users');
+    return raw ? JSON.parse(raw) : {};
+}
+
+function saveUsers(users) {
+    localStorage.setItem('recipe_craft_users', JSON.stringify(users));
+}
+
+function checkAuthState() {
+    const currentUser = localStorage.getItem('recipe_craft_current_user');
+    const authModal = document.getElementById('auth-modal');
+    const appWrapper = document.getElementById('app-wrapper');
+
+    if (currentUser) {
+        const user = JSON.parse(currentUser);
+        document.getElementById('user-name-display').innerText = user.name;
+        authModal.style.display = 'none';
+        appWrapper.style.display = 'block';
+        startApp();
+    } else {
+        authModal.style.display = 'flex';
+        appWrapper.style.display = 'none';
+    }
+}
+
+function setupAuthListeners() {
+    const loginTabBtn = document.getElementById('login-tab-btn');
+    const signupTabBtn = document.getElementById('signup-tab-btn');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    loginTabBtn.addEventListener('click', () => {
+        loginTabBtn.classList.add('active');
+        signupTabBtn.classList.remove('active');
+        loginForm.style.display = 'flex';
+        signupForm.style.display = 'none';
+    });
+
+    signupTabBtn.addEventListener('click', () => {
+        signupTabBtn.classList.add('active');
+        loginTabBtn.classList.remove('active');
+        signupForm.style.display = 'flex';
+        loginForm.style.display = 'none';
+    });
+
+    signupForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signup-name').value.trim();
+        const email = document.getElementById('signup-email').value.trim().toLowerCase();
+        const password = document.getElementById('signup-password').value;
+        const errorEl = document.getElementById('signup-error');
+
+        const users = getUsers();
+        if (users[email]) {
+            errorEl.innerText = "An account with this email already exists.";
+            return;
+        }
+
+        users[email] = { name, password };
+        saveUsers(users);
+
+        localStorage.setItem('recipe_craft_current_user', JSON.stringify({ name, email }));
+        errorEl.innerText = '';
+        checkAuthState();
+    });
+
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const password = document.getElementById('login-password').value;
+        const errorEl = document.getElementById('login-error');
+
+        const users = getUsers();
+        const user = users[email];
+
+        if (!user || user.password !== password) {
+            errorEl.innerText = "Invalid email or password.";
+            return;
+        }
+
+        localStorage.setItem('recipe_craft_current_user', JSON.stringify({ name: user.name, email }));
+        errorEl.innerText = '';
+        checkAuthState();
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('recipe_craft_current_user');
+        checkAuthState();
+    });
+}
 
 // Run init on DOM load
 window.addEventListener('DOMContentLoaded', init);
